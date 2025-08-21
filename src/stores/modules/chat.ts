@@ -23,9 +23,6 @@ export const useChatStore = defineStore('chat', () => {
     // 所有对话历史
     const conversations = ref<Conversation[]>([]);
 
-    // 侧边栏是否展开
-    const sidebarExpanded = ref(true);
-
     // 从localStorage加载数据
     const loadFromStorage = () => {
         const stored = localStorage.getItem('chat-conversations');
@@ -139,7 +136,6 @@ export const useChatStore = defineStore('chat', () => {
     return {
         currentConversation,
         conversations,
-        sidebarExpanded,
         groupedConversations,
         createConversation,
         selectConversation,
