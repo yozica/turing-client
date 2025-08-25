@@ -130,6 +130,23 @@ export const useChatStore = defineStore('chat', () => {
         }
     };
 
+    // 重命名对话
+    const renameConversation = (id: string, newTitle: string) => {
+        const conversation = conversations.value.find(
+            (c: Conversation) => c.id === id
+        );
+        if (conversation) {
+            conversation.title = newTitle;
+            conversation.updatedAt = Date.now();
+            saveToStorage();
+            
+            // 如果当前选中的是这个对话，也更新当前对话的标题
+            if (currentConversation.value?.id === id) {
+                currentConversation.value.title = newTitle;
+            }
+        }
+    };
+
     // 初始化加载数据
     loadFromStorage();
 
@@ -141,5 +158,6 @@ export const useChatStore = defineStore('chat', () => {
         selectConversation,
         addMessage,
         deleteConversation,
+        renameConversation,
     };
 });

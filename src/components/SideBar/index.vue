@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, provide } from 'vue';
 import { useChatStore, useSideBarStore } from '../../stores';
 import { NButton, NIcon, NTooltip } from 'naive-ui';
 import { ArrowMinimize16Filled } from '@vicons/fluent';
+import HistoryGroup from '../HistoryGroup/index.vue';
 import BaiduPNG from '../../assets/baidu.png';
 import NewMsgSVG from '../../assets/newMsg.svg';
 import EmptySVG from '../../assets/empty.svg';
@@ -13,17 +14,10 @@ const sideBarStore = useSideBarStore();
 const sideBarFixed = computed(() => sideBarStore.sideBarFixed);
 const groupedConversations = computed(() => chatStore.groupedConversations);
 const currentConversation = computed(() => chatStore.currentConversation);
+provide('currentConversation', currentConversation);
 
 const createNewConversation = () => {
     chatStore.createConversation();
-};
-
-const selectConversation = (id: string) => {
-    chatStore.selectConversation(id);
-};
-
-const deleteConversation = (id: string) => {
-    chatStore.deleteConversation(id);
 };
 </script>
 
@@ -54,7 +48,11 @@ const deleteConversation = (id: string) => {
             </n-tooltip>
         </div>
         <div class="side-bar-container__tools">
-            <n-button type="primary" style="width: 100%">
+            <n-button
+                type="primary"
+                style="width: 100%"
+                @click="createNewConversation"
+            >
                 <img
                     class="side-bar-container__tools-img"
                     :src="NewMsgSVG"
@@ -77,31 +75,12 @@ const deleteConversation = (id: string) => {
                 <p>暂无对话历史</p>
             </div>
             <!-- 历史对话 -->
-            <div
+            <HistoryGroup
                 v-for="(conversations, date) in groupedConversations"
                 :key="date"
-                class="side-bar-container__history-group"
-            >
-                <div class="side-bar-container__history-group-date">
-                    {{ date }}
-                </div>
-                <div
-                    v-for="conversation in conversations"
-                    :key="conversation.id"
-                    class="side-bar-container__history-group-item"
-                    :class="{
-                        active: currentConversation?.id === conversation.id,
-                    }"
-                    @click="selectConversation(conversation.id)"
-                >
-                    <div class="side-bar-container__history-group-item-text">
-                        {{ conversation.title }}
-                    </div>
-                    <div
-                        class="side-bar-container__history-group-item-mask"
-                    ></div>
-                </div>
-            </div>
+                :conversations="conversations"
+                :date="date"
+            />
         </div>
     </div>
 </template>
@@ -175,65 +154,6 @@ const deleteConversation = (id: string) => {
             .side-bar-container__history--empty-img {
                 width: 60px;
                 height: 60px;
-            }
-        }
-
-        .side-bar-container__history-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-
-            .side-bar-container__history-group-date {
-                font-size: 12px;
-                color: #6c757d;
-                font-weight: 500;
-                padding: 8px 12px;
-            }
-
-            .side-bar-container__history-group-item {
-                position: relative;
-                width: 100%;
-                height: 38px;
-                border-radius: 8px;
-                padding: 0 12px;
-                cursor: pointer;
-                background-color: var(--item-bg);
-
-                --item-bg: #f5f5f5;
-
-                &:hover {
-                    --item-bg: #e9ecef;
-                }
-
-                &.active {
-                    --item-bg: #e3f2fd;
-                    color: #1976d2;
-                }
-
-                .side-bar-container__history-group-item-text {
-                    width: 100%;
-                    height: 100%;
-                    line-height: 38px;
-                    overflow: hidden;
-                    white-space: nowrap;
-                    user-select: none;
-                }
-
-                .side-bar-container__history-group-item-mask {
-                    position: absolute;
-                    top: 0;
-                    right: 0;
-                    width: 24px;
-                    height: 100%;
-                    --dsr-side-bg-rgb: 249, 251, 255;
-                    background: linear-gradient(
-                        90deg,
-                        rgba(249, 251, 255, 0) 0%,
-                        var(--item-bg) 50%,
-                        var(--item-bg) 100%
-                    );
-                    border-radius: 0 8px 8px 0;
-                }
             }
         }
     }
