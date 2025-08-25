@@ -30,7 +30,7 @@ const deleteConversation = (id: string, title: string) => {
         negativeText: '取消',
         onPositiveClick: () => {
             chatStore.deleteConversation(id);
-        }
+        },
     });
 };
 
@@ -39,7 +39,9 @@ const startEditing = () => {
     editTitle.value = props.conversation.title;
     // 下一个tick聚焦输入框
     setTimeout(() => {
-        const input = document.querySelector('.history-item-container__input') as HTMLInputElement;
+        const input = document.querySelector(
+            '.history-item-container__input'
+        ) as HTMLInputElement;
         if (input) {
             input.focus();
             input.select();
@@ -48,8 +50,14 @@ const startEditing = () => {
 };
 
 const saveEdit = () => {
-    if (editTitle.value.trim() && editTitle.value.trim() !== props.conversation.title) {
-        chatStore.renameConversation(props.conversation.id, editTitle.value.trim());
+    if (
+        editTitle.value.trim() &&
+        editTitle.value.trim() !== props.conversation.title
+    ) {
+        chatStore.renameConversation(
+            props.conversation.id,
+            editTitle.value.trim()
+        );
     }
     isEditing.value = false;
 };
@@ -113,13 +121,13 @@ const handleSelectTools = (key: string) => {
             {{ conversation.title }}
         </div>
         <div class="history-item-container__mask"></div>
-        <div class="history-item-container__tools">
+        <div class="history-item-container__tools" @click.stop>
             <n-dropdown
-                trigger="hover"
+                trigger="click"
                 :options="toolsOptions"
                 @select="handleSelectTools"
             >
-                <n-icon><MoreHorizontal24Regular /></n-icon>
+                <n-icon :size="20"><MoreHorizontal24Regular /></n-icon>
             </n-dropdown>
         </div>
     </div>
