@@ -5,8 +5,8 @@ import ChatArea from './components/ChatArea/index.vue';
 
 <template>
     <div class="app-container">
-        <SideBar />
         <ChatArea />
+        <SideBar />
     </div>
 </template>
 
