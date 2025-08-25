@@ -143,13 +143,14 @@ const handleSelectTools = (key: string) => {
     }
 
     &.active {
-        --item-bg: #e3f2fd;
-        color: #1976d2;
+        --item-bg: #bae7ff;
+        color: #1890ff;
+        font-weight: 500;
     }
 
     &.editing {
         --item-bg: #ffffff;
-        box-shadow: 0 0 0 1px #1976d2;
+        box-shadow: 0 0 0 1px #1890ff;
     }
 
     .history-item-container__text {
@@ -217,7 +218,7 @@ const handleSelectTools = (key: string) => {
         border-radius: 4px;
 
         &:hover {
-            background-color: #fff;
+            background-color: #f5f5f5;
         }
     }
 }
