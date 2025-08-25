@@ -7,6 +7,7 @@ import MessageItem from '../MessageItem/index.vue';
 const props = defineProps<{
     messages: Message[];
     assistantAvatar: string;
+    loadingMessageId?: string;
 }>();
 
 const scrollbarRef = ref<InstanceType<typeof NScrollbar> | null>(null);
@@ -46,6 +47,7 @@ defineExpose({
                     :key="message.id"
                     :message="message"
                     :assistant-avatar="props.assistantAvatar"
+                    :isLoading="message.id === props.loadingMessageId && !message.content"
                 />
             </div>
         </n-scrollbar>

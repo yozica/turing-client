@@ -5,6 +5,7 @@ import { NInput, NButton, NIcon } from 'naive-ui';
 import { Send24Filled } from '@vicons/fluent';
 import BaiduPNG from '../../assets/baidu.png';
 import MessageList from '../MessageList/index.vue';
+import { DeepSeekApiService } from '../../services/deepseekApi';
 
 const chatStore = useChatStore();
 const sideBarStore = useSideBarStore();
@@ -12,6 +13,8 @@ const sideBarStore = useSideBarStore();
 const sideBarFixed = computed(() => sideBarStore.sideBarFixed);
 const inputMessage = ref('');
 const messageListRef = ref<InstanceType<typeof MessageList> | null>(null);
+const isLoading = ref(false);
+const loadingMessageId = ref<string | undefined>();
 
 const currentConversation = computed(() => chatStore.currentConversation);
 
@@ -25,7 +28,7 @@ const isInputCentered = computed(() => {
 
 // 发送消息
 const sendMessage = async () => {
-    if (!inputMessage.value.trim()) return;
+    if (!inputMessage.value.trim() || isLoading.value) return;
 
     const message = inputMessage.value.trim();
     inputMessage.value = '';
@@ -33,11 +36,82 @@ const sendMessage = async () => {
     // 添加用户消息
     chatStore.addMessage(message, 'user');
 
-    // 模拟AI回复（实际项目中应该调用API）
-    setTimeout(() => {
-        chatStore.addMessage(`这是对"${message}"的回复`, 'assistant');
+    // 设置loading状态
+    isLoading.value = true;
+
+    // 创建AI消息占位符（先不添加到消息历史中）
+    const aiMessageId = Date.now().toString() + '-ai';
+    loadingMessageId.value = aiMessageId;
+    chatStore.addMessage('', 'assistant', aiMessageId);
+
+    try {
+        // 调用DeepSeek API（流式），不包含占位符消息
+        const messagesToSend = (
+            currentConversation.value?.messages || []
+        ).filter(msg => msg.id !== aiMessageId);
+        await DeepSeekApiService.sendMessageStream(
+            messagesToSend,
+            contentChunk => {
+                // 更新AI消息内容（流式追加）
+                if (currentConversation.value) {
+                    const aiMessage = currentConversation.value.messages.find(
+                        msg => msg.id === aiMessageId
+                    );
+                    if (aiMessage) {
+                        // 如果消息已存在，则追加内容
+                        aiMessage.content += contentChunk;
+                        // 触发响应式更新
+                        currentConversation.value.messages = [
+                            ...currentConversation.value.messages,
+                        ];
+                    }
+                }
+                scrollToBottom();
+            },
+            () => {
+                // 流式响应完成
+                isLoading.value = false;
+                loadingMessageId.value = undefined;
+                scrollToBottom();
+            },
+            error => {
+                // 错误处理
+                console.error('发送消息失败:', error);
+                if (currentConversation.value) {
+                    const aiMessage = currentConversation.value.messages.find(
+                        msg => msg.id === aiMessageId
+                    );
+                    if (aiMessage) {
+                        aiMessage.content = `抱歉，内容生成失败：${error.message}`;
+                        currentConversation.value.messages = [
+                            ...currentConversation.value.messages,
+                        ];
+                    }
+                }
+                isLoading.value = false;
+                loadingMessageId.value = undefined;
+                scrollToBottom();
+            }
+        );
+    } catch (error) {
+        console.error('发送消息失败:', error);
+        if (currentConversation.value) {
+            const aiMessage = currentConversation.value.messages.find(
+                msg => msg.id === aiMessageId
+            );
+            if (aiMessage) {
+                aiMessage.content = `抱歉，内容生成失败：${
+                    error instanceof Error ? error.message : '未知错误'
+                }`;
+                currentConversation.value.messages = [
+                    ...currentConversation.value.messages,
+                ];
+            }
+        }
+        isLoading.value = false;
+        loadingMessageId.value = undefined;
         scrollToBottom();
-    }, 1000);
+    }
 };
 
 // 滚动到底部
@@ -75,6 +149,7 @@ onMounted(() => {
                 v-if="currentConversation && currentConversation.messages"
                 :messages="currentConversation.messages"
                 :assistant-avatar="BaiduPNG"
+                :loading-message-id="loadingMessageId"
             />
             <div
                 class="chat-area-container-box__input-area"
@@ -108,7 +183,7 @@ onMounted(() => {
                             secondary
                             type="primary"
                             size="small"
-                            :loading="false"
+                            :loading="isLoading"
                             style="padding: 0 5px"
                             @click="sendMessage"
                         >

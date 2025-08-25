@@ -4,7 +4,7 @@ import { ref, computed } from 'vue';
 export interface Message {
     id: string;
     content: string;
-    role: 'user' | 'assistant';
+    role: 'user' | 'assistant' | 'system';
     timestamp: number;
 }
 
@@ -63,12 +63,21 @@ export const useChatStore = defineStore('chat', () => {
 
     // 创建新对话
     const createConversation = () => {
+        const now = Date.now();
+
+        const systemMessage: Message = {
+            id: now + '-system',
+            role: 'system',
+            content: 'You are a helpful assistant.',
+            timestamp: now,
+        };
+
         const newConversation: Conversation = {
-            id: Date.now().toString(),
+            id: now.toString(),
             title: '新对话',
-            messages: [],
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
+            messages: [systemMessage],
+            createdAt: now,
+            updatedAt: now,
         };
 
         conversations.value.unshift(newConversation);
@@ -89,13 +98,17 @@ export const useChatStore = defineStore('chat', () => {
     };
 
     // 添加消息
-    const addMessage = (content: string, role: 'user' | 'assistant') => {
+    const addMessage = (
+        content: string,
+        role: 'user' | 'assistant',
+        customId?: string
+    ) => {
         if (!currentConversation.value) {
             createConversation();
         }
 
         const message: Message = {
-            id: Date.now().toString(),
+            id: customId || Date.now().toString(),
             content,
             role,
             timestamp: Date.now(),
@@ -107,7 +120,7 @@ export const useChatStore = defineStore('chat', () => {
         // 更新标题（如果是第一条用户消息）
         if (
             role === 'user' &&
-            currentConversation.value!.messages.length === 1
+            currentConversation.value!.messages.length === 2
         ) {
             currentConversation.value!.title =
                 content.slice(0, 20) + (content.length > 20 ? '...' : '');
@@ -139,7 +152,7 @@ export const useChatStore = defineStore('chat', () => {
             conversation.title = newTitle;
             conversation.updatedAt = Date.now();
             saveToStorage();
-            
+
             // 如果当前选中的是这个对话，也更新当前对话的标题
             if (currentConversation.value?.id === id) {
                 currentConversation.value.title = newTitle;
