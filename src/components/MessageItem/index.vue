@@ -1,26 +1,11 @@
 <script setup lang="ts">
 import type { Message } from '../../stores';
 import { NSpin } from 'naive-ui';
-import MarkdownIt from 'markdown-it';
-import { computed } from 'vue';
 
 const props = defineProps<{
     message: Message;
     isLoading?: boolean;
 }>();
-
-const md = new MarkdownIt({
-    html: true,
-    linkify: true,
-    typographer: true,
-});
-
-const renderedContent = computed(() => {
-    if (props.message.role === 'assistant' && props.message.content) {
-        return md.render(props.message.content);
-    }
-    return props.message.content;
-});
 </script>
 
 <template>
@@ -44,7 +29,7 @@ const renderedContent = computed(() => {
                     props.message.role === 'assistant' && props.message.content
                 "
             >
-                <div v-html="renderedContent" class="markdown-content"></div>
+                {{ props.message.content }}
             </template>
             <template v-else>
                 {{ props.message.content }}
@@ -84,106 +69,6 @@ const renderedContent = computed(() => {
     .message-item-container__loading-text {
         color: #666;
         font-size: 12px;
-    }
-}
-
-.markdown-content {
-    line-height: 1.6;
-
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-        margin: 1em 0 0.5em 0;
-        font-weight: 600;
-    }
-
-    p {
-        margin: 0.5em 0;
-    }
-
-    ul,
-    ol {
-        margin: 0.5em 0;
-        padding-left: 2em;
-    }
-
-    ul ul,
-    ul ol,
-    ol ul,
-    ol ol {
-        margin: 0.25em 0;
-        padding-left: 1.5em;
-    }
-
-    li {
-        margin: 0.25em 0;
-    }
-
-    code {
-        background-color: #f5f5f5;
-        padding: 0.1em 0.3em;
-        border-radius: 3px;
-        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-        font-size: 0.9em;
-    }
-
-    pre {
-        background-color: #f8f8f8;
-        padding: 1em;
-        border-radius: 5px;
-        overflow-x: auto;
-        margin: 0.5em 0;
-
-        code {
-            background: none;
-            padding: 0;
-            border-radius: 0;
-        }
-    }
-
-    blockquote {
-        border-left: 4px solid #ddd;
-        margin: 1em 0;
-        padding-left: 1em;
-        color: #666;
-    }
-
-    a {
-        color: #007bff;
-        text-decoration: none;
-
-        &:hover {
-            text-decoration: underline;
-        }
-    }
-
-    strong {
-        font-weight: 600;
-    }
-
-    em {
-        font-style: italic;
-    }
-
-    table {
-        border-collapse: collapse;
-        width: 100%;
-        margin: 0.5em 0;
-
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 0.5em;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f5f5f5;
-            font-weight: 600;
-        }
     }
 }
 </style>

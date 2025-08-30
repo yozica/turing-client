@@ -9,12 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "markdown-it": "^14.1.0",
     "pinia": "^3.0.3",
     "vue": "^3.5.18"
   },
   "devDependencies": {
-    "@types/markdown-it": "^14.1.2",
     "@vicons/fluent": "^0.13.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.7.0",
