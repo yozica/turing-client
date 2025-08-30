@@ -21,7 +21,7 @@ const currentConversation = computed(() => chatStore.currentConversation);
 const isInputCentered = computed(() => {
     return (
         !currentConversation.value ||
-        currentConversation.value.messages.length === 0
+        currentConversation.value.messages.length <= 1
     );
 });
 
