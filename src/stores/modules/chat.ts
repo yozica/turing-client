@@ -172,5 +172,6 @@ export const useChatStore = defineStore('chat', () => {
         addMessage,
         deleteConversation,
         renameConversation,
+        saveToStorage,
     };
 });

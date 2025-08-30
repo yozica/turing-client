@@ -3,7 +3,6 @@ import { ref, computed, nextTick, watch, onMounted } from 'vue';
 import { useChatStore, useSideBarStore } from '../../stores';
 import { NInput, NButton, NIcon } from 'naive-ui';
 import { Send24Filled } from '@vicons/fluent';
-import BaiduPNG from '../../assets/baidu.png';
 import MessageList from '../MessageList/index.vue';
 import { DeepSeekApiService } from '../../services/deepseekApi';
 
@@ -72,6 +71,8 @@ const sendMessage = async () => {
                 // 流式响应完成
                 isLoading.value = false;
                 loadingMessageId.value = undefined;
+                // 保存最终的消息内容到存储
+                chatStore.saveToStorage();
                 scrollToBottom();
             },
             error => {
@@ -86,6 +87,8 @@ const sendMessage = async () => {
                         currentConversation.value.messages = [
                             ...currentConversation.value.messages,
                         ];
+                        // 保存错误消息到存储
+                        chatStore.saveToStorage();
                     }
                 }
                 isLoading.value = false;
@@ -106,6 +109,8 @@ const sendMessage = async () => {
                 currentConversation.value.messages = [
                     ...currentConversation.value.messages,
                 ];
+                // 保存错误消息到存储
+                chatStore.saveToStorage();
             }
         }
         isLoading.value = false;
@@ -148,7 +153,6 @@ onMounted(() => {
                 ref="messageListRef"
                 v-if="currentConversation && currentConversation.messages"
                 :messages="currentConversation.messages"
-                :assistant-avatar="BaiduPNG"
                 :loading-message-id="loadingMessageId"
             />
             <div

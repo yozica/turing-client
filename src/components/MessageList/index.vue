@@ -6,7 +6,6 @@ import MessageItem from '../MessageItem/index.vue';
 
 const props = defineProps<{
     messages: Message[];
-    assistantAvatar: string;
     loadingMessageId?: string;
 }>();
 
@@ -16,12 +15,6 @@ const scrollbarRef = ref<InstanceType<typeof NScrollbar> | null>(null);
 const scrollToBottom = () => {
     if (scrollbarRef.value) {
         // 使用 Naive UI Scrollbar 的 scrollTo 方法
-        console.log(
-            scrollbarRef.value.$el?.nextElementSibling?.querySelector(
-                '.n-scrollbar-content'
-            )?.offsetTop
-        );
-
         scrollbarRef.value.scrollTo({
             behavior: 'smooth',
             top: scrollbarRef.value.$el?.nextElementSibling?.querySelector(
@@ -46,7 +39,6 @@ defineExpose({
                     v-for="message in props.messages"
                     :key="message.id"
                     :message="message"
-                    :assistant-avatar="props.assistantAvatar"
                     :isLoading="message.id === props.loadingMessageId && !message.content"
                 />
             </div>

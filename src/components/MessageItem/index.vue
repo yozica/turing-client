@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import type { Message } from '../../stores';
-import { NAvatar, NSpin } from 'naive-ui';
+import { NSpin } from 'naive-ui';
 import MarkdownIt from 'markdown-it';
 import { computed } from 'vue';
 
 const props = defineProps<{
     message: Message;
-    assistantAvatar: string;
     isLoading?: boolean;
 }>();
 
@@ -30,21 +29,18 @@ const renderedContent = computed(() => {
         :class="{ 'message-item-container--user': message.role === 'user' }"
         v-if="message.role !== 'system'"
     >
-        <n-avatar
-            v-if="props.message.role === 'assistant'"
-            :src="props.assistantAvatar"
-            color="transparent"
-            :size="30"
-        />
+        <div
+            class="message-item-container__loading"
+            v-if="props.isLoading && !props.message.content"
+        >
+            <n-spin size="small" />
+            <span class="message-item-container__loading-text">
+                正在思考中...
+            </span>
+        </div>
         <div class="message-item-container__content">
-            <template v-if="props.isLoading && !props.message.content">
-                <n-spin size="small" />
-                <span class="message-item-container__loading-text">
-                    正在思考中...
-                </span>
-            </template>
             <template
-                v-else-if="
+                v-if="
                     props.message.role === 'assistant' && props.message.content
                 "
             >
@@ -63,11 +59,6 @@ const renderedContent = computed(() => {
     flex-direction: column;
     width: 70%;
 
-    .message-item-container__avatar {
-        width: 40px;
-        height: 40px;
-    }
-
     .message-item-container__content {
         border-radius: 12px;
         padding: 5px 0;
@@ -85,10 +76,15 @@ const renderedContent = computed(() => {
     }
 }
 
-.message-item-container__loading-text {
-    margin-left: 8px;
-    color: #666;
-    font-size: 12px;
+.message-item-container__loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .message-item-container__loading-text {
+        color: #666;
+        font-size: 12px;
+    }
 }
 
 .markdown-content {
