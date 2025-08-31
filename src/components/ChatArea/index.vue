@@ -1,19 +1,21 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, watch, onMounted } from 'vue';
-import { useChatStore, useSideBarStore } from '../../stores';
-import { NInput, NButton, NIcon } from 'naive-ui';
-import { Send24Filled } from '@vicons/fluent';
-import MessageList from '../MessageList/index.vue';
-import { DeepSeekApiService } from '../../services/deepseekApi';
+import { ref, computed, nextTick, watch, onMounted } from "vue";
+import { useChatStore, useSideBarStore } from "../../stores";
+import { NInput, NButton, NIcon } from "naive-ui";
+import { Send24Filled } from "@vicons/fluent";
+import MessageList from "../MessageList/index.vue";
+import { TuringApiService } from "../../services/turingApi";
 
 const chatStore = useChatStore();
 const sideBarStore = useSideBarStore();
 
 const sideBarFixed = computed(() => sideBarStore.sideBarFixed);
-const inputMessage = ref('');
+const inputMessage = ref("");
 const messageListRef = ref<InstanceType<typeof MessageList> | null>(null);
 const isLoading = ref(false);
+const loadingTitle = ref("正在思考中...");
 const loadingMessageId = ref<string | undefined>();
+const loadingRagNum = ref(0);
 
 const currentConversation = computed(() => chatStore.currentConversation);
 
@@ -30,31 +32,31 @@ const sendMessage = async () => {
     if (!inputMessage.value.trim() || isLoading.value) return;
 
     const message = inputMessage.value.trim();
-    inputMessage.value = '';
+    inputMessage.value = "";
 
     // 添加用户消息
-    chatStore.addMessage(message, 'user');
+    chatStore.addMessage(message, "user");
 
     // 设置loading状态
     isLoading.value = true;
 
     // 创建AI消息占位符（先不添加到消息历史中）
-    const aiMessageId = Date.now().toString() + '-ai';
+    const aiMessageId = Date.now().toString() + "-ai";
     loadingMessageId.value = aiMessageId;
-    chatStore.addMessage('', 'assistant', aiMessageId);
+    chatStore.addMessage("", "assistant", aiMessageId);
 
     try {
-        // 调用DeepSeek API（流式），不包含占位符消息
+        // 调用Turing API（流式），不包含占位符消息
         const messagesToSend = (
             currentConversation.value?.messages || []
-        ).filter(msg => msg.id !== aiMessageId);
-        await DeepSeekApiService.sendMessageStream(
+        ).filter((msg) => msg.id !== aiMessageId);
+        await TuringApiService.sendMessageStream(
             messagesToSend,
-            contentChunk => {
+            (contentChunk) => {
                 // 更新AI消息内容（流式追加）
                 if (currentConversation.value) {
                     const aiMessage = currentConversation.value.messages.find(
-                        msg => msg.id === aiMessageId
+                        (msg) => msg.id === aiMessageId
                     );
                     if (aiMessage) {
                         // 如果消息已存在，则追加内容
@@ -67,20 +69,37 @@ const sendMessage = async () => {
                 }
                 scrollToBottom();
             },
+            (onChangeStatus) => {
+                loadingTitle.value = onChangeStatus;
+            },
+            (count) => {
+                loadingRagNum.value = count;
+            },
+            (docs, sources, maps) => {
+                const aiMessage = currentConversation.value.messages.find(
+                    (msg) => msg.id === aiMessageId
+                );
+                if (aiMessage) {
+                    aiMessage.docs = docs;
+                    aiMessage.sources = sources;
+                    aiMessage.maps = maps;
+                }
+            },
             () => {
                 // 流式响应完成
                 isLoading.value = false;
+                loadingTitle.value = "正在思考中...";
                 loadingMessageId.value = undefined;
                 // 保存最终的消息内容到存储
                 chatStore.saveToStorage();
                 scrollToBottom();
             },
-            error => {
+            (error) => {
                 // 错误处理
-                console.error('发送消息失败:', error);
+                console.error("发送消息失败:", error);
                 if (currentConversation.value) {
                     const aiMessage = currentConversation.value.messages.find(
-                        msg => msg.id === aiMessageId
+                        (msg) => msg.id === aiMessageId
                     );
                     if (aiMessage) {
                         aiMessage.content = `抱歉，内容生成失败：${error.message}`;
@@ -92,19 +111,20 @@ const sendMessage = async () => {
                     }
                 }
                 isLoading.value = false;
+                loadingTitle.value = "正在思考中...";
                 loadingMessageId.value = undefined;
                 scrollToBottom();
             }
         );
     } catch (error) {
-        console.error('发送消息失败:', error);
+        console.error("发送消息失败:", error);
         if (currentConversation.value) {
             const aiMessage = currentConversation.value.messages.find(
-                msg => msg.id === aiMessageId
+                (msg) => msg.id === aiMessageId
             );
             if (aiMessage) {
                 aiMessage.content = `抱歉，内容生成失败：${
-                    error instanceof Error ? error.message : '未知错误'
+                    error instanceof Error ? error.message : "未知错误"
                 }`;
                 currentConversation.value.messages = [
                     ...currentConversation.value.messages,
@@ -114,6 +134,7 @@ const sendMessage = async () => {
             }
         }
         isLoading.value = false;
+        loadingTitle.value = "正在思考中...";
         loadingMessageId.value = undefined;
         scrollToBottom();
     }
@@ -153,7 +174,10 @@ onMounted(() => {
                 ref="messageListRef"
                 v-if="currentConversation && currentConversation.messages"
                 :messages="currentConversation.messages"
+                :is-loading="isLoading"
+                :loading-title="loadingTitle"
                 :loading-message-id="loadingMessageId"
+                :loading-rag-num="loadingRagNum"
             />
             <div
                 class="chat-area-container-box__input-area"

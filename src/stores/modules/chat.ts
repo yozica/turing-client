@@ -1,10 +1,15 @@
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
+
+export interface Map {}
 
 export interface Message {
     id: string;
     content: string;
-    role: 'user' | 'assistant' | 'system';
+    docs?: string[];
+    sources?: string[];
+    maps?: Map[];
+    role: "user" | "assistant" | "system";
     timestamp: number;
 }
 
@@ -16,7 +21,7 @@ export interface Conversation {
     updatedAt: number;
 }
 
-export const useChatStore = defineStore('chat', () => {
+export const useChatStore = defineStore("chat", () => {
     // 当前对话
     const currentConversation = ref<Conversation | null>(null);
 
@@ -25,7 +30,7 @@ export const useChatStore = defineStore('chat', () => {
 
     // 从localStorage加载数据
     const loadFromStorage = () => {
-        const stored = localStorage.getItem('chat-conversations');
+        const stored = localStorage.getItem("chat-conversations");
         if (stored) {
             conversations.value = JSON.parse(stored);
         }
@@ -34,7 +39,7 @@ export const useChatStore = defineStore('chat', () => {
     // 保存到localStorage
     const saveToStorage = () => {
         localStorage.setItem(
-            'chat-conversations',
+            "chat-conversations",
             JSON.stringify(conversations.value)
         );
     };
@@ -44,7 +49,7 @@ export const useChatStore = defineStore('chat', () => {
         const groups: Record<string, Conversation[]> = {};
 
         conversations.value.forEach((conv: Conversation) => {
-            const date = new Date(conv.updatedAt).toLocaleDateString('zh-CN');
+            const date = new Date(conv.updatedAt).toLocaleDateString("zh-CN");
             if (!groups[date]) {
                 groups[date] = [];
             }
@@ -52,7 +57,7 @@ export const useChatStore = defineStore('chat', () => {
         });
 
         // 按时间倒序排序每个组
-        Object.keys(groups).forEach(date => {
+        Object.keys(groups).forEach((date) => {
             groups[date].sort(
                 (a: Conversation, b: Conversation) => b.updatedAt - a.updatedAt
             );
@@ -66,15 +71,15 @@ export const useChatStore = defineStore('chat', () => {
         const now = Date.now();
 
         const systemMessage: Message = {
-            id: now + '-system',
-            role: 'system',
-            content: 'You are a helpful assistant.',
+            id: now + "-system",
+            role: "system",
+            content: "You are a helpful assistant.",
             timestamp: now,
         };
 
         const newConversation: Conversation = {
             id: now.toString(),
-            title: '新对话',
+            title: "新对话",
             messages: [systemMessage],
             createdAt: now,
             updatedAt: now,
@@ -100,7 +105,7 @@ export const useChatStore = defineStore('chat', () => {
     // 添加消息
     const addMessage = (
         content: string,
-        role: 'user' | 'assistant',
+        role: "user" | "assistant",
         customId?: string
     ) => {
         if (!currentConversation.value) {
@@ -119,11 +124,11 @@ export const useChatStore = defineStore('chat', () => {
 
         // 更新标题（如果是第一条用户消息）
         if (
-            role === 'user' &&
+            role === "user" &&
             currentConversation.value!.messages.length === 2
         ) {
             currentConversation.value!.title =
-                content.slice(0, 20) + (content.length > 20 ? '...' : '');
+                content.slice(0, 20) + (content.length > 20 ? "..." : "");
         }
 
         saveToStorage();

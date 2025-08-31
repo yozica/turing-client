@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { NScrollbar } from 'naive-ui';
-import type { Message } from '../../stores';
-import MessageItem from '../MessageItem/index.vue';
+import { ref } from "vue";
+import { NScrollbar } from "naive-ui";
+import type { Message } from "../../stores";
+import MessageItem from "../MessageItem/index.vue";
 
 const props = defineProps<{
     messages: Message[];
+    isLoading: boolean;
+    loadingTitle: string;
     loadingMessageId?: string;
+    loadingRagNum: number;
 }>();
 
 const scrollbarRef = ref<InstanceType<typeof NScrollbar> | null>(null);
@@ -16,9 +19,9 @@ const scrollToBottom = () => {
     if (scrollbarRef.value) {
         // 使用 Naive UI Scrollbar 的 scrollTo 方法
         scrollbarRef.value.scrollTo({
-            behavior: 'smooth',
+            behavior: "smooth",
             top: scrollbarRef.value.$el?.nextElementSibling?.querySelector(
-                '.n-scrollbar-content'
+                ".n-scrollbar-content"
             )?.offsetHeight,
         });
     }
@@ -39,7 +42,11 @@ defineExpose({
                     v-for="message in props.messages"
                     :key="message.id"
                     :message="message"
-                    :isLoading="message.id === props.loadingMessageId && !message.content"
+                    :isLoading="
+                        props.isLoading && loadingMessageId === message.id
+                    "
+                    :loading-title="props.loadingTitle"
+                    :loading-rag-num="loadingRagNum"
                 />
             </div>
         </n-scrollbar>
