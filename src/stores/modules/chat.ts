@@ -1,14 +1,34 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 
-export interface Map {}
+export interface Map {
+    origin: string;
+    destination: string;
+    origin_location: {
+        lng: number;
+        lat: number;
+    };
+    dest_location: {
+        lng: number;
+        lat: number;
+    };
+    routes: MapRoute[];
+}
+
+export interface MapRoute {
+    mode: "驾车" | "公交" | "骑行" | "步行";
+    distance_km: number;
+    duration: string;
+    full_route: string; // 对路线的介绍，html格式
+    steps_summary: string; // 对路线的总结，html格式
+}
 
 export interface Message {
     id: string;
     content: string;
     docs?: string[];
     sources?: string[];
-    maps?: Map[];
+    maps?: Map | null;
     role: "user" | "assistant" | "system";
     timestamp: number;
 }

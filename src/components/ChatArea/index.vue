@@ -76,6 +76,7 @@ const sendMessage = async () => {
                 loadingRagNum.value = count;
             },
             (docs, sources, maps) => {
+                if (!currentConversation.value) return;
                 const aiMessage = currentConversation.value.messages.find(
                     (msg) => msg.id === aiMessageId
                 );

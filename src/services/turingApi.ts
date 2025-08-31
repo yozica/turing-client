@@ -1,4 +1,4 @@
-import type { Message } from "../stores/modules/chat";
+import type { Map, Message } from "../stores/modules/chat";
 
 export interface TuringResponse {
     type: string;
@@ -8,7 +8,7 @@ export interface TuringResponse {
     doc_count?: number;
     rag_docs?: string[];
     rag_sources?: string[];
-    map_info?: any;
+    map_info?: Map;
 }
 
 const StatusMap = {
@@ -35,7 +35,7 @@ export class TuringApiService {
         onChunk: (content: string) => void,
         onChangeStatus: (status: MessageStatus) => void,
         onRagInfo: (count: number) => void,
-        onEnd: (docs: string[], scorces: string[], maps: []) => void,
+        onEnd: (docs: string[], scorces: string[], maps: Map | null) => void,
         onComplete: () => void,
         onError: (error: Error) => void
     ): Promise<void> {
@@ -124,7 +124,7 @@ export class TuringApiService {
                                 onEnd(
                                     data.rag_docs ? data.rag_docs : [],
                                     data.rag_sources ? data.rag_sources : [],
-                                    data.map_info ? data.map_info : []
+                                    data.map_info ? data.map_info : null
                                 );
                                 break;
                         }
