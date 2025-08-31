@@ -85,7 +85,7 @@ defineExpose({
         bottom: 0;
         background: linear-gradient(
             rgba(#fff, 0) 0%,
-            rgba(#fff, 1) 70%,
+            rgba(#fff, 1) 80%,
             rgba(#fff, 1) 100%
         );
     }

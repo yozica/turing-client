@@ -90,6 +90,7 @@ const sendMessage = async () => {
                 // 流式响应完成
                 isLoading.value = false;
                 loadingTitle.value = "正在思考中...";
+                loadingRagNum.value = 0;
                 loadingMessageId.value = undefined;
                 // 保存最终的消息内容到存储
                 chatStore.saveToStorage();
@@ -113,6 +114,7 @@ const sendMessage = async () => {
                 }
                 isLoading.value = false;
                 loadingTitle.value = "正在思考中...";
+                loadingRagNum.value = 0;
                 loadingMessageId.value = undefined;
                 scrollToBottom();
             }
@@ -136,6 +138,7 @@ const sendMessage = async () => {
         }
         isLoading.value = false;
         loadingTitle.value = "正在思考中...";
+        loadingRagNum.value = 0;
         loadingMessageId.value = undefined;
         scrollToBottom();
     }
